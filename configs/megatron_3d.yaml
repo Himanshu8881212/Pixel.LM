@@ -1,0 +1,101 @@
+# Megatron Core 3D Parallelism Configuration
+# For production-scale PixelLM training
+
+# =============================================================================
+# Model Parallelism
+# =============================================================================
+
+# Tensor Parallelism (TP): Split layers across GPUs
+# Recommended: 4-8 for large models
+tensor_model_parallel_size: 4
+
+# Pipeline Parallelism (PP): Split layers into stages
+# Recommended: 2-4 for very deep models
+pipeline_model_parallel_size: 2
+
+# Expert Parallelism (EP): Distribute MoE experts
+# Set to num_experts / experts_per_gpu
+expert_model_parallel_size: 8
+
+# Context Parallelism: For ultra-long sequences
+context_parallel_size: 1
+
+# =============================================================================
+# Sequence Parallelism
+# =============================================================================
+
+# Enable sequence parallelism (reduces activation memory)
+sequence_parallel: true
+
+# Gradient accumulation fusion
+gradient_accumulation_fusion: true
+
+# Async communication
+async_tensor_model_parallel_allreduce: true
+
+# =============================================================================
+# Memory Optimization
+# =============================================================================
+
+# Activation checkpointing (recompute activations during backward)
+activations_checkpoint_method: "block"
+activations_checkpoint_num_layers: 1
+
+# Distribute optimizer states across DP ranks
+use_distributed_optimizer: true
+
+# Overlap communication with computation
+overlap_grad_reduce: true
+overlap_param_gather: true
+
+# =============================================================================
+# MoE Configuration
+# =============================================================================
+
+# Number of experts
+num_moe_experts: 288
+
+# Experts to route per token
+moe_router_topk: 8
+
+# Expert parallel group size
+moe_expert_parallel_size: 8
+
+# Shared expert (DeepSeek-V3 style)
+moe_shared_expert_intermediate_size: 8192
+
+# Aux-loss-free load balancing
+moe_aux_loss_coeff: 0.0
+
+# =============================================================================
+# Precision
+# =============================================================================
+
+# Use BF16 for compute
+bf16: true
+
+# FP8 (requires Hopper GPUs)
+fp8: false
+fp8_margin: 0
+fp8_interval: 1
+fp8_amax_history_len: 1024
+fp8_amax_compute_algo: "max"
+
+# =============================================================================
+# Example Configurations by Scale
+# =============================================================================
+
+# Pixel (8 GPUs):
+#   tensor_model_parallel_size: 2
+#   pipeline_model_parallel_size: 1
+#   expert_model_parallel_size: 1
+
+# MegaPixel (32 GPUs):
+#   tensor_model_parallel_size: 4
+#   pipeline_model_parallel_size: 1
+#   expert_model_parallel_size: 4
+
+# GigaPixel (256 GPUs):
+#   tensor_model_parallel_size: 8
+#   pipeline_model_parallel_size: 4
+#   expert_model_parallel_size: 8
